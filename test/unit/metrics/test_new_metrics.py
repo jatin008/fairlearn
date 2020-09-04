@@ -3,6 +3,7 @@
 
 import numpy as np
 import pandas as pd
+import pytest
 import sklearn.metrics as skm
 
 from fairlearn.metrics._new_metrics import group_summary
@@ -30,15 +31,21 @@ def test_data_lengths():
 
 def test_learning():
     result = group_summary(skm.accuracy_score, y_true, y_pred, [sf_1, sf_2])
-    both_sf = np.stack(sf_1.to_numpy(), sf_2.to_numpy())
+    both_sf = np.stack([sf_1.to_numpy(), sf_2.to_numpy()], axis=-1)
     sf_combined = _compress_multiple_sensitive_features_into_single_column(both_sf)
-    print(sf_combined)
     expected = accuracy_score_group_summary(y_true, y_pred, sensitive_features=sf_combined)
 
-    assert result.overall == skm.accuracy_score(y_true, y_pred)
-    assert len(result.by_groups) == 6
+
+    assert expected.overall == result.overall
     print("expected =", expected)
     print("Acutal\n", result.by_groups)
+
+    assert expected.by_group['a,A'] == pytest.approx(result.by_groups[('a', 'A')])
+    assert expected.by_group['a,B'] == pytest.approx(result.by_groups[('a', 'B')])
+    assert expected.by_group['a,C'] == pytest.approx(result.by_groups[('a', 'C')])
+    assert expected.by_group['b,A'] == pytest.approx(result.by_groups[('b', 'A')])
+    assert expected.by_group['b,B'] == pytest.approx(result.by_groups[('b', 'B')])
+    assert expected.by_group['b,C'] == pytest.approx(result.by_groups[('b', 'C')])
     assert False
 
 
@@ -48,4 +55,7 @@ def test_learning2():
 
     print("expected =", expected)
     print("Acutal", result.by_groups)
-    assert False
+    assert expected.overall == result.overall
+    # Don't like the extra [0] in these...
+    assert expected.by_group['a'] == pytest.approx(result.by_groups['a'][0])
+    assert expected.by_group['b'] == pytest.approx(result.by_groups['b'][0])
