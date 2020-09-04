@@ -43,7 +43,7 @@ def group_summary(metric_function, y_true, y_pred, sensitive_features):
         mask = np.ones(len(y_true))
         for i in range(len(current_groups)):
             nxt_mask = (np.asarray(sensitive_features[i]) == current_groups[i])
-            mask = (mask == nxt_mask)
+            mask = np.logical_and(mask, nxt_mask)
 
         result._by_groups[current_groups] = metric_function(_yt[mask], _yp[mask])
 

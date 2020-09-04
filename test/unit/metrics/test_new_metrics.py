@@ -46,7 +46,6 @@ def test_learning():
     assert expected.by_group['b,A'] == pytest.approx(result.by_groups[('b', 'A')])
     assert expected.by_group['b,B'] == pytest.approx(result.by_groups[('b', 'B')])
     assert expected.by_group['b,C'] == pytest.approx(result.by_groups[('b', 'C')])
-    assert False
 
 
 def test_learning2():
